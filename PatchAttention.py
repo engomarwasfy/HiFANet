@@ -151,6 +151,4 @@ class PatchAttentionNet(nn.Module):
         ffn_output = self.ffn( output1 )
         ffn_output = self.dropout(ffn_output)
 
-        output2 = self.layer_norm2(output1 + ffn_output )
-
-        return output2
+        return self.layer_norm2(output1 + ffn_output )

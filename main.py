@@ -116,7 +116,7 @@ def train_worker(local_rank, ngpus_per_node, args):
                                                                          current_lr))
 
             if args.global_rank == 0 and ep%10 == 0 and ep > 50:
-                model_save_basename = 'model_epoch_{}.pth'.format(ep)
+                model_save_basename = f'model_epoch_{ep}.pth'
                 outdict = {
                     'epoch': ep,
                     'model': net.module.state_dict(),

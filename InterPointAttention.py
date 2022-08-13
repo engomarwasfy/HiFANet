@@ -94,9 +94,7 @@ class InterPointAttentionNet(nn.Module):
 
         V_permute = V.permute(0, 2, 3, 1)  # [B, numheads, feat_len, N]
 
-        merged_feat = torch.matmul(V_permute, QK_weight)  # [B, numheads, feat_len, N]
-
-        return merged_feat
+        return torch.matmul(V_permute, QK_weight)
 
     def split_to_multiheads(self, inputs):
         '''
@@ -105,12 +103,12 @@ class InterPointAttentionNet(nn.Module):
         :return: splitted tensor, [B, N, headnum, feat_len/head_num]
         '''
         input_shape = inputs.size()
-        output_feat = inputs.view(input_shape[0],
-                                  input_shape[1],
-                                  self.num_heads,
-                                  input_shape[2] // self.num_heads)
-
-        return output_feat
+        return inputs.view(
+            input_shape[0],
+            input_shape[1],
+            self.num_heads,
+            input_shape[2] // self.num_heads,
+        )
 
     def split_posprior_to_multiheads(self, inputs):
         '''
@@ -119,13 +117,13 @@ class InterPointAttentionNet(nn.Module):
         :return: splited pos prior, of shape [B, N, N, numheads, featlen//numheads]
         '''
         input_shape = inputs.size()
-        output_feat = inputs.view(input_shape[0],
-                                  input_shape[1],
-                                  input_shape[2],
-                                  self.num_heads,
-                                  input_shape[3]//self.num_heads)
-
-        return output_feat
+        return inputs.view(
+            input_shape[0],
+            input_shape[1],
+            input_shape[2],
+            self.num_heads,
+            input_shape[3] // self.num_heads,
+        )
 
     def forward(self, input_feat, input_3Dloc):
         '''
@@ -163,6 +161,4 @@ class InterPointAttentionNet(nn.Module):
         ffn_output = self.ffn(output1)
         ffn_output = self.dropout(ffn_output)
 
-        output2 = self.layer_norm2(output1 + ffn_output) #[B, N, featlen]
-
-        return output2
+        return self.layer_norm2(output1 + ffn_output)

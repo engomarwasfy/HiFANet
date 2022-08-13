@@ -24,6 +24,4 @@ class PointWiseFeedForwardNet(nn.Module):
         :param x: input feature after multi-head self-attention module
         :return: output features
         '''
-        feat = self.ffn(x)  # [B,N,obs_num, feat_len]
-
-        return feat
+        return self.ffn(x)
