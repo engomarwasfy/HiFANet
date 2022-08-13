@@ -13,12 +13,11 @@ class HiFADataset(Dataset):
         self.get_feat_list()
 
     def get_feat_list(self):
-        feat_list_dir = list()
-        feat_list_dir.append('/00/')
-        featname_list = list()
+        feat_list_dir = ['/00/']
+        featname_list = []
         featname_list.extend(glob.glob(os.path.join(feat_list_dir[0], '*imgfeat*.npy')))
 
-        print('train data raw length = {}'.format(len(featname_list)))
+        print(f'train data raw length = {len(featname_list)}')
 
         self.featname_list = featname_list
         random.shuffle( self.featname_list )

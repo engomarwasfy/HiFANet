@@ -20,9 +20,7 @@ def rgb_to_float(color):
 
     hex_rgb = hex_r | hex_g | hex_b
 
-    float_rgb = struct.unpack('f', struct.pack('i', hex_rgb))[0]
-
-    return float_rgb
+    return struct.unpack('f', struct.pack('i', hex_rgb))[0]
 
 def float_to_rgb(float_rgb):
     """ Converts a packed float RGB format to an RGB list    
@@ -36,24 +34,22 @@ def float_to_rgb(float_rgb):
     s = struct.pack('>f', float_rgb)
     i = struct.unpack('>l', s)[0]
     pack = ctypes.c_uint32(i).value
-			
+
     r = (pack & 0x00FF0000) >> 16
     g = (pack & 0x0000FF00) >> 8
     b = (pack & 0x000000FF)
-			
-    color = [r,g,b]
-			
-    return color
+
+    return [r,g,b]
 
 
 def read_calib_file( abs_file_path ):
     """Read a calibration file and parse into a dictionary"""
-    data_dict = dict()
+    data_dict = {}
     if not os.path.exists( abs_file_path ):
-        print('input file does not exist: {}'.format( abs_file_path ) )
-        raise ValueError('file does not exists: {}'.format( abs_file_path ) )
+        print(f'input file does not exist: {abs_file_path}')
+        raise ValueError(f'file does not exists: {abs_file_path}')
     with open( abs_file_path, 'r' ) as f:
-        for line_tmp in f.readlines():
+        for line_tmp in f:
             line_tmp = line_tmp.rstrip('\n')
             key_tmp, val_tmp = line_tmp.split(':', 1)
             val_tmp = val_tmp.strip()
@@ -66,7 +62,6 @@ def read_calib_file( abs_file_path ):
 
 def load_calib( abs_file_path ):
     """"load and compute intrinsic and extrinsic calibration params"""
-    data = dict()
     filedata = read_calib_file( abs_file_path )
     # Create 3x4 projection matrices
     P_rect_00 = np.reshape(filedata['P0'], (3, 4))
@@ -74,10 +69,12 @@ def load_calib( abs_file_path ):
     P_rect_20 = np.reshape(filedata['P2'], (3, 4))
     P_rect_30 = np.reshape(filedata['P3'], (3, 4))
 
-    data['P_rect_00'] = P_rect_00
-    data['P_rect_10'] = P_rect_10
-    data['P_rect_20'] = P_rect_20
-    data['P_rect_30'] = P_rect_30
+    data = {
+        'P_rect_00': P_rect_00,
+        'P_rect_10': P_rect_10,
+        'P_rect_20': P_rect_20,
+        'P_rect_30': P_rect_30,
+    }
 
     # Compute the rectified extrinsics from cam0 to camN
     T1 = np.eye(4)
@@ -119,8 +116,8 @@ def load_calib( abs_file_path ):
 def load_velodyne_scan( abs_file_path ):
     """Load and parse a velodye binary file"""
     if not os.path.exists( abs_file_path ):
-        print('input file does not exist: {}'.format( abs_file_path ) )
-        raise ValueError('file does not exist: {}'.format( abs_file_path ) )
+        print(f'input file does not exist: {abs_file_path}')
+        raise ValueError(f'file does not exist: {abs_file_path}')
     scan = np.fromfile( abs_file_path, dtype = np.float32 )
     scan = scan.reshape((-1, 4))
 
@@ -128,8 +125,8 @@ def load_velodyne_scan( abs_file_path ):
 
 def load_label( label_filename ):
     if not os.path.exists( label_filename ):
-        print('label file does not exists: {}'.format( label_filename ) )
-        raise ValueError('file does not exist: {}'.format( label_filename ) )
+        print(f'label file does not exists: {label_filename}')
+        raise ValueError(f'file does not exist: {label_filename}')
     label = np.fromfile( label_filename, dtype = np.int32 )
     label = label.reshape((-1))
 
@@ -192,16 +189,16 @@ def get_pcd_2D_loc_check_0405( velo_scan, calib_file_name, max_depth, img_h, img
 
     valid = np.zeros( (loc_2D.shape[0]), np.int32 )
 
-    depth_map_dict = dict()
-    valid_row_list = list()
+    depth_map_dict = {}
+    valid_row_list = []
     for row_tmp in range( loc_2D.shape[0] ):
         depth_val_tmp = velo_scan[ row_tmp, 0 ]
         row_idx = loc_2D[row_tmp, 1]
         col_idx = loc_2D[row_tmp, 0]
 
         key = (row_idx, col_idx)
-        if not key in depth_map_dict:
-            depth_map_dict[ key ] = dict()
+        if key not in depth_map_dict:
+            depth_map_dict[ key ] = {}
             val = velo_scan[ row_tmp, : ]
             depth_map_dict[ key ]['pcd'] = val
             depth_map_dict[ key ]['row_id'] = row_tmp
@@ -221,10 +218,7 @@ def get_pcd_2D_loc_check_0405( velo_scan, calib_file_name, max_depth, img_h, img
     loc_2D = loc_2D[valid == 1]
     pcd_ID_depth = pcd_ID_depth[valid == 1 ]
 
-    #concate to obtain [pcd_ID, depth, loc_2D[0], loc_2D[1]]
-    pcd_ID_depth_loc_2D = np.concatenate( (pcd_ID_depth, loc_2D), axis = -1 )
-
-    return pcd_ID_depth_loc_2D
+    return np.concatenate( (pcd_ID_depth, loc_2D), axis = -1 )
 
 def get_pcd_2D_loc_check( velo_scan, calib_file_name, max_depth ):
     calib_dict = load_calib( calib_file_name )
@@ -234,8 +228,8 @@ def get_pcd_2D_loc_check( velo_scan, calib_file_name, max_depth ):
 
     img_h, img_w = 376, 1241
 
-    depth_map_dict = dict()
-    valid_row_list = list()
+    depth_map_dict = {}
+    valid_row_list = []
     for row_tmp in range( velo_scan.shape[0] ):
         depth_val_tmp = velo_scan[ row_tmp, 0 ]
         if depth_val_tmp < 0:
@@ -247,12 +241,12 @@ def get_pcd_2D_loc_check( velo_scan, calib_file_name, max_depth ):
         row_idx = int( loc_2D[row_tmp, 1] + 0.5 )
         col_idx = int( loc_2D[row_tmp, 0] + 0.5 )
 
-        if not ( row_idx >= 0 and row_idx < img_h and col_idx >= 0 and col_idx < img_w ):
+        if row_idx < 0 or row_idx >= img_h or col_idx < 0 or col_idx >= img_w:
             continue
 
         key = (row_idx, col_idx)
-        if not key in depth_map_dict:
-            depth_map_dict[ key ] = dict()
+        if key not in depth_map_dict:
+            depth_map_dict[ key ] = {}
             val = velo_scan[ row_tmp, : ]
             depth_map_dict[ key ]['pcd'] = val
             depth_map_dict[ key ]['row_id'] = row_tmp
@@ -310,7 +304,7 @@ def proj_pcd_2_image( veloscan_file_name, calib_file_name ):
             pdb.set_trace()
         col_idx = int( x[row_tmp, 0] + 0.5 )
 
-        if not ( row_idx >= 0 and row_idx < img_h and col_idx >= 0 and col_idx < img_w ):
+        if row_idx < 0 or row_idx >= img_h or col_idx < 0 or col_idx >= img_w:
             continue
 
         depth_map[ row_idx, col_idx ] = depth_val_tmp
@@ -328,7 +322,7 @@ def get_label_from_2d( scan, x, pred ):
     for row_tmp in range( scan.shape[0] ):
         row_idx = int( x[row_tmp, 1] + 0.5 )
         col_idx = int( x[row_tmp, 0] + 0.5 )
-        if not ( row_idx >= 0 and row_idx < img_h and col_idx >= 0 and col_idx < img_w ):
+        if row_idx < 0 or row_idx >= img_h or col_idx < 0 or col_idx >= img_w:
             continue
         label_tmp = pred[ row_idx, col_idx ]
         label[ row_tmp ] = label_tmp
@@ -338,7 +332,7 @@ def get_label_from_2d( scan, x, pred ):
 def merge_depth_and_rgb( depth_map, rgb_img_name ):
     rgb_img = cv2.imread( rgb_img_name, 1 )
     if rgb_img is None:
-        print('failed to load the image {}'.format( rgb_img_name ) )
+        print(f'failed to load the image {rgb_img_name}')
         return depth_map
     depth_map = cv2.cvtColor( depth_map, cv2.COLOR_GRAY2BGR )
     """

@@ -61,6 +61,4 @@ class HiFANet(nn.Module):
         output_instanceattent = self.instance_attention_net( output_patchattent ) #[B, 1, 256]
         output_interpoint_attent = self.interpoint_attention_net( output_instanceattent, point_loc )
 
-        predict_logits = self.classification_head( output_interpoint_attent )
-
-        return predict_logits
+        return self.classification_head( output_interpoint_attent )

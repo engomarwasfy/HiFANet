@@ -76,9 +76,7 @@ class InstanceAttentionNet(nn.Module):
 
         V_permute = V.permute(0,1,3,4,2) #[B, N, numheads, feat_len, obs_num]
 
-        merged_feat = torch.matmul(V_permute, QK_weight)  # [B, N, numheads, feat_len, obsnum]
-
-        return merged_feat
+        return torch.matmul(V_permute, QK_weight)
 
     def split_to_multiheads(self, inputs):
         '''
@@ -87,13 +85,13 @@ class InstanceAttentionNet(nn.Module):
         :return: splitted tensor, [B, N, obs_num, headnum, feat_len/head_num]
         '''
         input_shape = inputs.size()
-        output_feat = inputs.view(input_shape[0],
-                                  input_shape[1],
-                                  input_shape[2],
-                                  self.num_heads,
-                                  input_shape[3]//self.num_heads)
-
-        return output_feat
+        return inputs.view(
+            input_shape[0],
+            input_shape[1],
+            input_shape[2],
+            self.num_heads,
+            input_shape[3] // self.num_heads,
+        )
 
     def forward(self, x):
         '''

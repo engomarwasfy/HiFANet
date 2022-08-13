@@ -14,16 +14,14 @@ class AvgFC(torch.nn.Module):
                             bias=True))
 
     def forward(self,x):
-        output = self.nerual_net(x)
-
-        return output
+        return self.nerual_net(x)
 
 
 
 def main():
     model = AvgFC()
     pytorch_total_params = np.sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print('model parameter num = {}'.format(pytorch_total_params))
+    print(f'model parameter num = {pytorch_total_params}')
 
 if __name__ == '__main__':
     main()

@@ -18,20 +18,18 @@ def parse_calibration(filename):
     """
     calib = {}
 
-    calib_file = open(filename)
-    for line in calib_file:
-        key, content = line.strip().split(":")
-        values = [float(v) for v in content.strip().split()]
+    with open(filename) as calib_file:
+        for line in calib_file:
+            key, content = line.strip().split(":")
+            values = [float(v) for v in content.strip().split()]
 
-        pose = np.zeros((4, 4))
-        pose[0, 0:4] = values[0:4]
-        pose[1, 0:4] = values[4:8]
-        pose[2, 0:4] = values[8:12]
-        pose[3, 3] = 1.0
+            pose = np.zeros((4, 4))
+            pose[0, 0:4] = values[:4]
+            pose[1, 0:4] = values[4:8]
+            pose[2, 0:4] = values[8:12]
+            pose[3, 3] = 1.0
 
-        calib[key] = pose
-
-    calib_file.close()
+            calib[key] = pose
 
     return calib
 
@@ -58,7 +56,7 @@ def parse_poses(filename, calibration):
         values = [float(v) for v in line.strip().split()]
 
         pose = np.zeros((4, 4))
-        pose[0, 0:4] = values[0:4]
+        pose[0, 0:4] = values[:4]
         pose[1, 0:4] = values[4:8]
         pose[2, 0:4] = values[8:12]
         pose[3, 3] = 1.0
@@ -89,7 +87,7 @@ def parse_poses_default(filename, calibration):
         values = [float(v) for v in line.strip().split()]
 
         pose = np.zeros((4, 4))
-        pose[0, 0:4] = values[0:4]
+        pose[0, 0:4] = values[:4]
         pose[1, 0:4] = values[4:8]
         pose[2, 0:4] = values[8:12]
         pose[3, 3] = 1.0
@@ -117,7 +115,7 @@ def load_veloscan_gtlabel_predlabel( velo_scan_file_name,
     velo_scan = load_velo_scan( velo_scan_file_name )
     velo_scan_basename = os.path.basename( velo_scan_file_name )
 
-    gt_label_basename = os.path.splitext( velo_scan_basename )[0] + '.label'
+    gt_label_basename = f'{os.path.splitext(velo_scan_basename)[0]}.label'
     gt_label = load_label( os.path.join( gt_label_dir, gt_label_basename ) )
 
     pred_label_basename = gt_label_basename
@@ -127,7 +125,7 @@ def load_veloscan_gtlabel_predlabel( velo_scan_file_name,
 
 
 def process_one_folder( folder ):
-    print("Processing {} ".format(folder), end="", flush=True)
+    print(f"Processing {folder} ", end="", flush=True)
     calib_file_name = os.path.join( folder, 'calib.txt' )
     pose_file_name = os.path.join( folder, 'poses.txt' )
     velo_scan_dir = os.path.join( folder, 'velodyne' )
@@ -190,7 +188,7 @@ def process_one_folder( folder ):
         if idx == 0:
             continue
         if idx % 100 == 0:
-            print('processed {}/{} scans.'.format( idx, len(scan_files) ) )
+            print(f'processed {idx}/{len(scan_files)} scans.')
         # read scan and labels, get pose
         velo_scan_tmp, label_gt_tmp, label_pred_tmp = load_veloscan_gtlabel_predlabel( scan_files[ idx ],
                                                                                        gt_label_dir,
